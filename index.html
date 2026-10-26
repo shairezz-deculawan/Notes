@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Character set and responsive viewport configuration -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes Clone</title>
+
+    <style>
+        /* Base reset: Apply border-box sizing and clean up default margins/padding */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Root page background color and default text styling */
+        body {
+            background: #f7f8fa;
+            color: #202124;
+        }
+
+        /* HEADER SECTION STYLES */
+
+        header {
+            height: 70px;
+            background: white;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            gap: 20px;
+            position: sticky; /* Keep header visible at the top during scroll */
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Application branding/logo */
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            min-width: 120px;
+        }
+
+        /* Search bar container */
+        .search {
+            flex: 1;
+            max-width: 600px;
+            margin: auto;
+            position: relative;
+        }
+
+        /* Search input field styling */
+        .search input {
+            width: 100%;
+            padding: 13px 20px 13px 45px;
+            border: none;
+            background: #f1f3f4;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        /* Position the search icon inside the input field */
+        .search span {
+            position: absolute;
+            left: 17px;
+            top: 11px;
+            font-size: 20px;
+        }
+
+        /* 'New Note' call-to-action button */
+        .new-btn {
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 22px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .new-btn:hover {
+            background: #111;
+        }
+
+        /* MAIN APP LAYOUT STYLES */
+
+        .layout {
+            display: flex;
+            min-height: calc(100vh - 70px); /* Fill remaining viewport height below header */
+        }
+
+        /* SIDEBAR NAVIGATION STYLES */
+
+        aside {
+            width: 230px;
+            background: white;
+            border-right: 1px solid #ddd;
+            padding: 25px 15px;
+        }
+
+        .menu-title {
+            color: #777;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 10px 15px;
+            text-transform: uppercase;
+        }
+
+        /* Navigation links/buttons in sidebar */
+        .menu button {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: left;
+            padding: 13px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        /* Highlight state for active/hovered menu item */
+        .menu button:hover,
+        .menu button.active {
+            background: #eeeeee;
+            font-weight: bold;
+        }
+
+        /* MAIN CONTENT AREA STYLES */
+
+        main {
+            flex: 1;
+            padding: 30px;
+            overflow: auto;
+        }
+
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .top-row h1 {
+            font-size: 28px;
+        }
+
+        .note-count {
+            color: #777;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* NOTE CARD GRID STYLES */
+
+        /* Responsive grid layout for individual note cards */
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 18px;
+        }
+
+        /* Individual note card styles */
+        .note {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 190px;
+            cursor: pointer;
+            position: relative;
+            transition: 0.2s;
+        }
+
+        /* Hover animation elevation for notes */
+        .note:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        /* Visual distinction for pinned notes */
+        .note.pinned {
+            border: 2px solid #555;
+        }
+
+        .note h3 {
+            margin-bottom: 12px;
+            font-size: 18px;
+            padding-right: 70px; /* Space reserved for pin and favorite icons */
+        }
+
+        .note p {
+            color: #555;
+            line-height: 1.5;
+            white-space: pre-wrap; /* Preserve line breaks in content */
+            max-height: 90px;
+            overflow: hidden; /* Truncate overflowing preview text */
+        }
+
+        .note-date {
+            position: absolute;
+            bottom: 12px;
+            left: 20px;
+            font-size: 11px;
+            color: #999;
+        }
+
+        /* Pin and Favorite icons positioned at top-right of note card */
+        .pin-icon {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 18px;
+        }
+
+        .favorite-icon {
+            position: absolute;
+            right: 42px;
+            top: 15px;
+            font-size: 18px;
+        }
+
+        /* TRASH ITEM ACTION BUTTONS STYLES */
+
+        .trash-actions {
+            position: absolute;
+            left: 15px;
+            right: 15px;
+            bottom: 35px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .trash-actions button {
+            flex: 1;
+            border: none;
+            border-radius: 7px;
+            padding: 8px 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .restore-btn {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .restore-btn:hover {
+            background: #c8e6c9;
+        }
+
+        .permanent-delete-btn {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .permanent-delete-btn:hover {
+            background: #ffcdd2;
+        }
+
+        /* Empty state view styling */
+        .empty {
+            text-align: center;
+            color: #888;
+            padding: 80px 20px;
+            font-size: 17px;
+        }
+
+        /* MODAL STYLES (Create/Edit Dialog) */
+
+        /* Modal backdrop overlay */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        /* Show modal state class */
+        .modal.show {
+            display: flex;
+        }
+
+        /* Inner dialog box */
+        .modal-box {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 15px;
+            padding: 25px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 22px;
+        }
+
+        .close {
+            border: none;
+            background: transparent;
+            font-size: 25px;
+            cursor: pointer;
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 7px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        textarea {
+            min-height: 220px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #555;
+        }
+
+        /* Checkbox option rows in modal */
+        .pin-option,
+        .favorite-option {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pin-option input,
+        .favorite-option input {
+            width: auto;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .modal-actions button {
+            padding: 11px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .save-btn {
+            background: #333;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .cancel-btn {
+            background: #eee;
+        }
+
+        /* RESPONSIVE DESIGN (Mobile view adjustments) */
+
+        @media (max-width: 700px) {
+            /* Collapse sidebar to icon-only mode on small screens */
+            aside {
+                width: 70px;
+                padding: 15px 8px;
+            }
+
+            .menu-title {
+                display: none;
+            }
+
+            .menu button {
+                text-align: center;
+                font-size: 20px;
+                padding: 12px 5px;
+            }
+
+            /* Hide text labels in navigation buttons */
+            .menu button span {
+                display: none;
+            }
+
+            .logo {
+                min-width: auto;
+                font-size: 20px;
+            }
+
+            header {
+                padding: 0 12px;
+                gap: 10px;
+            }
+
+            .new-btn {
+                padding: 10px 13px;
+            }
+
+            main {
+                padding: 20px 12px;
+            }
+
+            /* Single column grid layout for small screens */
+            .notes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- APPLICATION HEADER -->
+<header>
+
+    <!-- App Logo -->
+    <div class="logo">
+        📝 Notes
+    </div>
+
+    <!-- Search Input Control -->
+    <div class="search">
+        <span>🔍</span>
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search notes..."
+            oninput="searchNotes()"
+        >
+    </div>
+
+    <!-- Trigger button to create a new note -->
+    <button
+        class="new-btn"
+        onclick="openNewNote()"
+    >
+        + New Note
+    </button>
+
+</header>
+
+<!-- MAIN APPLICATION LAYOUT -->
+<div class="layout">
+
+    <!-- SIDEBAR NAVIGATION MENU -->
+    <aside>
+        <div class="menu-title">
+            Menu
+        </div>
+
+        <div class="menu">
+            <!-- Filter: View All Notes -->
+            <button
+                class="active"
+                onclick="changeSection('all', this)"
+            >
+                📝 <span>All Notes</span>
+            </button>
+
+            <!-- Filter: View Pinned Notes -->
+            <button
+                onclick="changeSection('pinned', this)"
+            >
+                📌 <span>Pinned</span>
+            </button>
+
+            <!-- Filter: View Favorite Notes -->
+            <button
+                onclick="changeSection('favorites', this)"
+            >
+                ⭐ <span>Favorites</span>
+            </button>
+
+            <!-- Filter: View Soft-Deleted Notes -->
+            <button
+                onclick="changeSection('trash', this)"
+            >
+                🗑️ <span>Trash</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT CONTENT DISPLAY -->
+    <main>
+        <div class="top-row">
+            <div>
+                <!-- Active Section Title -->
+                <h1 id="sectionTitle">
+                    All Notes
+                </h1>
+
+                <!-- Active Note Count Indicator -->
+                <div
+                    class="note-count"
+                    id="noteCount"
+                >
+                    0 notes
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Container where note cards are rendered -->
+        <div
+            id="notesContainer"
+            class="notes-grid"
+        ></div>
+    </main>
+
+</div>
+
+
+<!-- CREATE / EDIT NOTE MODAL DIALOG -->
+<div
+    class="modal"
+    id="noteModal"
+>
+    <div class="modal-box">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h2 id="modalTitle">
+                New Note
+            </h2>
+
+            <button
+                class="close"
+                onclick="closeModal()"
+            >
+                ×
+            </button>
+        </div>
+
+        <!-- Title Field Input -->
+        <label>
+            Title
+        </label>
+        <input
+            type="text"
+            id="titleInput"
+            placeholder="Note title"
+        >
+
+        <!-- Content Field Input -->
+        <label>
+            Note
+        </label>
+        <textarea
+            id="contentInput"
+            placeholder="Write your note here..."
+        ></textarea>
+
+        <!-- Option: Pin Note toggle -->
+        <div class="pin-option">
+            <input
+                type="checkbox"
+                id="pinInput"
+            >
+            <label
+                for="pinInput"
+                style="margin:0;"
+            >
+                📌 Pin this note
+            </label>
+        </div>
+
+        <!-- Option: Favorite Note toggle -->
+        <div class="favorite-option">
+            <input
+                type="checkbox"
+                id="favoriteInput"
+            >
+            <label
+                for="favoriteInput"
+                style="margin:0;"
+            >
+                ⭐ Favorite this note
+            </label>
+        </div>
+
+        <!-- Dialog Control Buttons -->
+        <div class="modal-actions">
+            <!-- Soft-delete action button (Visible only when editing existing notes) -->
+            <button
+                class="delete-btn"
+                id="deleteButton"
+                onclick="deleteCurrentNote()"
+                style="display:none;"
+            >
+                Delete
+            </button>
+
+            <div style="margin-left:auto; display:flex; gap:8px;">
+                <button
+                    class="cancel-btn"
+                    onclick="closeModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    class="save-btn"
+                    onclick="saveNote()"
+                >
+                    Save
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+// Application State Variables
+let notes = [];             // Stores all note objects
+let currentNoteId = null;   // Tracks the note currently open in modal (null = new note)
+let currentSection = "all"; // Tracks current navigation section ('all', 'pinned', 'favorites', 'trash')
+
+
+/* =========================================================
+   LOAD NOTES
+   Fetches note data from backend API with LocalStorage fallback
+========================================================= */
+async function loadNotes() {
+    try {
+        // Attempt to fetch notes from backend endpoint
+        const response = await fetch("/api/notes");
+
+        if (!response.ok) {
+            throw new Error("Server error");
+        }
+
+        notes = await response.json();
+        displayNotes();
+
+    } catch (error) {
+        console.error(error);
+
+        // Fallback: load notes from browser local storage if network request fails
+        const saved = localStorage.getItem("notesClone");
+        notes = saved ? JSON.parse(saved) : [];
+
+        displayNotes();
+    }
+}
+
+
+/* =========================================================
+   DISPLAY NOTES
+   Filters, searches, and dynamically renders notes to DOM
+========================================================= */
+function displayNotes() {
+    const container = document.getElementById("notesContainer");
+    container.innerHTML = "";
+
+    // 1. Filter notes according to currently selected section
+    let visibleNotes = notes.filter(note => {
+        // Show deleted items only in Trash view
+        if (currentSection === "trash") {
+            return note.deleted === true;
+        }
+
+        // Exclude deleted items from all other views
+        if (note.deleted === true) {
+            return false;
+        }
+
+        // Pinned view filter
+        if (currentSection === "pinned") {
+            return note.pinned === true;
+        }
+
+        // Favorites view filter
+        if (currentSection === "favorites") {
+            return note.favorite === true;
+        }
+
+        return true;
+    });
+
+    // 2. Filter notes according to current search input text
+    const search = document.getElementById("searchInput")
+        .value
+        .toLowerCase()
+        .trim();
+
+    if (search !== "") {
+        visibleNotes = visibleNotes.filter(note =>
+            (note.title || "").toLowerCase().includes(search) ||
+            (note.content || "").toLowerCase().includes(search)
+        );
+    }
+
+    // 3. Update active item counter text
+    document.getElementById("noteCount").textContent =
+        visibleNotes.length + (visibleNotes.length === 1 ? " note" : " notes");
+
+    // 4. Render Empty State message if no notes match criteria
+    if (visibleNotes.length === 0) {
+        container.innerHTML = `
+            <div class="empty" style="grid-column:1/-1;">
+                📝<br><br>
+                No notes here yet.
+            </div>
+        `;
+        return;
+    }
+
+    // 5. Generate and mount HTML element cards for visible notes
+    visibleNotes.forEach(note => {
+        const card = document.createElement("div");
+
+        card.className = "note" + (note.pinned ? " pinned" : "");
+
+        /*
+         * Trash notes cannot be opened/edited.
+         * Only active notes trigger edit modal on click.
+         */
+        if (note.deleted === true) {
+            card.onclick = null;
+        } else {
+            card.onclick = () => openEditNote(note.id);
+        }
+
+        const pin = note.pinned ? "📌" : "";
+        const favorite = note.favorite ? "⭐" : "";
+
+        /* Render Trash Card View (includes Restore and Delete Forever actions) */
+        if (note.deleted === true) {
+            card.innerHTML = `
+                <div class="pin-icon">${pin}</div>
+                <div class="favorite-icon">${favorite}</div>
+                <h3>${escapeHtml(note.title || "Untitled")}</h3>
+                <p>${escapeHtml(note.content || "")}</p>
+                
+                <div class="trash-actions">
+                    <button 
+                        class="restore-btn" 
+                        onclick="restoreNote(event, ${note.id})"
+                    >
+                        ↩ Restore
+                    </button>
+                    <button 
+                        class="permanent-delete-btn" 
+                        onclick="deleteForever(event, ${note.id})"
+                    >
+                        🗑 Delete Forever
+                    </button>
+                </div>
+
+                <div class="note-date">${note.date || ""}</div>
+            `;
+        } 
+        /* Render Active Standard Note Card */
+        else {
+            card.innerHTML = `
+                <div class="pin-icon">${pin}</div>
+                <div class="favorite-icon">${favorite}</div>
+                <h3>${escapeHtml(note.title || "Untitled")}</h3>
+                <p>${escapeHtml(note.content || "")}</p>
+                <div class="note-date">${note.date || ""}</div>
+            `;
+        }
+
+        container.appendChild(card);
+    });
+}
+
+
+/* =========================================================
+   NEW NOTE
+   Resets and opens modal for creating a new note
+========================================================= */
+function openNewNote() {
+    currentNoteId = null; // Clear note ID tracking
+
+    // Reset input fields in modal form
+    document.getElementById("modalTitle").textContent = "New Note";
+    document.getElementById("titleInput").value = "";
+    document.getElementById("contentInput").value = "";
+    document.getElementById("pinInput").checked = false;
+    document.getElementById("favoriteInput").checked = false;
+    document.getElementById("deleteButton").style.display = "none";
+
+    // Show modal dialog and set focus to title input
+    document.getElementById("noteModal").classList.add("show");
+    document.getElementById("titleInput").focus();
+}
+
+
+/* =========================================================
+   EDIT NOTE
+   Populates and displays modal with selected note data
+========================================================= */
+function openEditNote(id) {
+    const note = notes.find(n => Number(n.id) === Number(id));
+
+    if (!note) return;
+
+    currentNoteId = note.id; // Store reference to open note ID
+
+    // Populate modal inputs with target note's current values
+    document.getElementById("modalTitle").textContent = "Edit Note";
+    document.getElementById("titleInput").value = note.title || "";
+    document.getElementById("contentInput").value = note.content || "";
+    document.getElementById("pinInput").checked = note.pinned === true;
+    document.getElementById("favoriteInput").checked = note.favorite === true;
+    document.getElementById("deleteButton").style.display = "block"; // Show delete option
+
+    document.getElementById("noteModal").classList.add("show");
+}
+
+
+/* =========================================================
+   SAVE NOTE
+   Creates new note or updates existing note (Local + API)
+========================================================= */
+async function saveNote() {
+    const title = document.getElementById("titleInput").value.trim();
+    const content = document.getElementById("contentInput").value.trim();
+    const pinned = document.getElementById("pinInput").checked;
+    const favorite = document.getElementById("favoriteInput").checked;
+
+    // Validation check: prevent saving empty note entries
+    if (!title && !content) {
+        alert("Please enter a title or note.");
+        return;
+    }
+
+    const now = new Date().toLocaleString();
+
+    // CREATE NEW NOTE LOGIC
+    if (currentNoteId === null) {
+        const newNote = {
+            id: Date.now(),
+            title: title || "Untitled",
+            content: content,
+            pinned: pinned,
+            favorite: favorite,
+            deleted: false,
+            date: now
+        };
+
+        notes.unshift(newNote); // Prepend new note to list start
+    } 
+    // UPDATE EXISTING NOTE LOGIC
+    else {
+        const note = notes.find(n => Number(n.id) === Number(currentNoteId));
+
+        if (note) {
+            note.title = title || "Untitled";
+            note.content = content;
+            note.pinned = pinned;
+            note.favorite = favorite;
+            note.date = now;
+        }
+    }
+
+    // Persist changes locally
+    localStorage.setItem("notesClone", JSON.stringify(notes));
+
+    // Persist changes remotely via server API endpoints
+    try {
+        if (currentNoteId === null) {
+            await fetch("/api/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: title || "Untitled",
+                    content: content,
+                    pinned: pinned,
+                    favorite: favorite
+                })
+            });
+        } else {
+            await fetch("/api/update", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: currentNoteId,
+                    title: title || "Untitled",
+                    content: content,
+                    pinned: pinned,
+                    favorite: favorite
+                })
+            });
+        }
+    } catch (error) {
+        console.log("Local save used because server API is unavailable.");
+    }
+
+    closeModal();
+    displayNotes();
+}
+
+
+/* =========================================================
+   MOVE TO TRASH
+   Soft-deletes note from active state to trash bin
+========================================================= */
+async function deleteCurrentNote() {
+    if (currentNoteId === null) return;
+
+    const note = notes.find(n => Number(n.id) === Number(currentNoteId));
+
+    if (!note) return;
+
+    /* Flag as soft-deleted and clear priority states */
+    note.deleted = true;
+    note.pinned = false;
+    note.favorite = false;
+
+    // Persist locally
+    localStorage.setItem("notesClone", JSON.stringify(notes));
+
+    // Send soft-delete request to API endpoint
+    try {
+        await fetch("/api/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: currentNoteId })
+        });
+    } catch (error) {
+        console.log("Using local storage.");
+    }
+
+    closeModal();
+    displayNotes();
+}
+
+
+/* =========================================================
+   RESTORE
+   Restores soft-deleted note from trash back to active list
+========================================================= */
+async function restoreNote(event, id) {
+    event.stopPropagation(); // Stop click event propagation to parent card
+
+    const note = notes.find(n => Number(n.id) === Number(id));
+
+    if (!note) return;
+
+    note.deleted = false; // Reset soft-delete flag
+
+    // Save update locally
+    localStorage.setItem("notesClone", JSON.stringify(notes));
+
+    // Send restore request to backend
+    try {
+        await fetch("/api/restore", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: id })
+        });
+    } catch (error) {
+        console.log("Using local storage.");
+    }
+
+    displayNotes();
+}
+
+
+/* =========================================================
+   DELETE FOREVER
+   Permanently purges note from application state
+========================================================= */
+async function deleteForever(event, id) {
+    event.stopPropagation(); // Stop click event propagation
+
+    // Confirm irreversible destruction with user
+    if (!confirm("Delete this note forever? This action cannot be undone.")) {
+        return;
+    }
+
+    // Filter target note out of the main array completely
+    notes = notes.filter(note => Number(note.id) !== Number(id));
+
+    // Persist deletion locally
+    localStorage.setItem("notesClone", JSON.stringify(notes));
+
+    // Call permanent deletion backend endpoint
+    try {
+        await fetch("/api/permanent-delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: id })
+        });
+    } catch (error) {
+        console.log("Using local storage.");
+    }
+
+    displayNotes();
+}
+
+
+/* =========================================================
+   CHANGE SECTION
+   Handles sidebar section selection and active tab toggles
+========================================================= */
+function changeSection(section, button) {
+    currentSection = section;
+
+    // Update UI button selection state
+    document.querySelectorAll(".menu button").forEach(btn => 
+        btn.classList.remove("active")
+    );
+    button.classList.add("active");
+
+    // Title label mappings
+    const titles = {
+        all: "All Notes",
+        pinned: "Pinned Notes",
+        favorites: "Favorite Notes",
+        trash: "Trash"
+    };
+
+    document.getElementById("sectionTitle").textContent = titles[section];
+
+    displayNotes();
+}
+
+
+/* =========================================================
+   SEARCH
+   Triggers note re-render on input value change
+========================================================= */
+function searchNotes() {
+    displayNotes();
+}
+
+
+/* =========================================================
+   CLOSE MODAL
+   Hides the create/edit modal popup dialog
+========================================================= */
+function closeModal() {
+    document.getElementById("noteModal").classList.remove("show");
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+   Prevents XSS attacks by sanitizing user HTML inputs
+========================================================= */
+function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+
+/* =========================================================
+   EVENT LISTENER: CLOSE OUTSIDE MODAL
+   Dismisses modal if user clicks on background backdrop area
+========================================================= */
+document.getElementById("noteModal").addEventListener("click", function(event) {
+    if (event.target === this) {
+        closeModal();
+    }
+});
+
+
+/* =========================================================
+   INITIALIZATION
+   Bootstraps the application on initial page load
+========================================================= */
+loadNotes();
+
+</script>
+
+</body>
+</html>
